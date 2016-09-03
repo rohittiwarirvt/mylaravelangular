@@ -2,7 +2,7 @@
   'use strict';
 
 
-  function RoleFactory(){
+  function RoleFactory($q, TransitionProperties){
     'ngInject';
 
     function Role( roleName, validationFunction) {
@@ -13,6 +13,26 @@
 
     // To do after RoleStore.js
     Role.prototype.validateRole = function () {
+      if (angular.isFunction(this.validationFunction)) {
+        var validationResult = this.validationFunction.call(null, this.roleName, TransitionProperties);
+        if (!angular.isFunction(validationResult.then)) {
+          validationResult = wrapInPromise(validationResult, this.roleName);
+        }
+        return validationResult;
+      }
+
+      if (angular.isArray(this.validationFunction)) {
+        var promises = this.validationFunction.map(function(permissionName) {
+          if(PermissionStore.hasPermissionDefinition(permissionName)) {
+            var permission = PermissionStore.getPermissionDefinition(permissionName);
+            return permission.validatePermission();
+          }
+          $q.reject(permissionName);
+        });
+
+        return $q.all(promises);
+      }
+
 
     }
 
@@ -41,4 +61,4 @@
     .module('permission')
     .factory('Role', RoleFactory);
 
-})();
+}());

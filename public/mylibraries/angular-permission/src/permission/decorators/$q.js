@@ -38,4 +38,4 @@
   angular
     .module('permission')
     .decorator('$q', $q);
-})();
+}());
