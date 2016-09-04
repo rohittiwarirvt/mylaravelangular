@@ -1,0 +1,30 @@
+<header>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 navbar-brand">
+        <a ui-sref='mygharseva-home'>
+          <img src="mygharseva/images/misc/mgs-logo.png" alt="">
+        </a>
+      </div>
+      <div class="col-md-8">
+        <nav>
+          <li  class="textfont hidden-xs">
+              <div class="myaccount">
+                 <span uib-dropdown >
+                    <a href id="simple-dropdown" class="myaccount-dropdown" uib-dropdown-toggle>
+                        MyAccount
+                    </a>
+                    <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="simple-dropdown">
+                       <li ng-repeat="option in myAccount">
+                          <a ui-sref={{option.state}} ui-sref-opts="{reload: true}">{{option.text}}</a>
+                       </li>
+                       <li><a ng-click="logout()">LogOut</a></li>
+                    </ul>
+                  </span>
+              </div>
+          </li>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
