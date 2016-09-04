@@ -6,7 +6,8 @@ angular.module('myApp', [
   'ui.bootstrap',
   'myApp.view1',
   'myApp.view2',
-  'myApp.version'
+  'myApp.version',
+  'myApp.mygharseva'
 ]).
 config(['$locationProvider', '$urlRouterProvider', '$stateProvider', function($locationProvider,$urlRouterProvider, $stateProvider) {
 
