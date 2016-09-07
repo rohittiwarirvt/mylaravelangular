@@ -104,6 +104,8 @@
         return property.call(null, TransitionProperties);
       }
     }
+
+    return PermissionMap;
   }
 
   angular

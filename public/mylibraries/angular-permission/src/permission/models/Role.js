@@ -55,6 +55,8 @@
         throw new TypeError('Parameter "validationFunction" must be an array or string');
       }
     }
+
+    return Role;
   }
 
   angular
