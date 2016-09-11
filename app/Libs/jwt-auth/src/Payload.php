@@ -17,7 +17,7 @@ class Payload implements \ArrayAccess
   public function __construct(array $claims, PayloadValidator, $refreshFlow = false)
   {
     $this->claims = $claims;
-    $validator ->setRfresFlow($refreshFlow)->check($this->toArray());
+    $validator->setRefreshFlow($refreshFlow)->check($this->toArray());
 
   }
 
