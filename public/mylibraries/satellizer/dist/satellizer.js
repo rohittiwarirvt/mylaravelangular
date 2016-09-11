@@ -465,19 +465,64 @@
 
   var Interceptor = (function() {
     function Interceptor(SatellizerConfig, SatellizerShared, SatellizerStorage){
-
+      var _this = this;
+      this.SatellizerConfig = SatellizerConfig;
+      this.SatellizerShared = SatellizerShared;
+      this.SatellizerStorage = SatellizerStorage;
+      this.request = function(config) {
+        if (config['skipAuthorization']) {
+          return config;
+        }
+        if (_this.SatellizerShared.isAuthenticated() && _this.SatellizerConfig.httpInterceptor()) {
+          var tokenName = _this.SatellizerConfig.tokenPrefix ? [_this.SatellizerConfig.tokenPrefix, _this.SatellizerConfig.tokenName].join('_') :
+          _this.SatellizerConfig.tokenName;
+          var token = _this.SatellizerStorage.get(tokenName);
+          if (_this.SatellizerConfig.tokenHeader && _this.SatellizerConfig.tokenType) {
+            token = _this.SatellizerConfig.tokenType + ' ' + token;
+          }
+          config.headers[_this.SatellizerConfig.tokenHeader] = token;
+        }
+        return config;
+      };
     }
-  })();
 
+    Interceptor.Factory = function(SatellizerConfig, SatellizerShared, SatellizerStorage) {
+      return new Interceptor(SatellizerConfig, SatellizerShared, SatellizerStorage);
+    }
+
+    Interceptor.$inject = ['SatellizerConfig', 'SatellizerShared', 'SatellizerStorage'];
+    return Interceptor;
+  })();
+    Interceptor.Factory.$inject = ['SatellizerConfig', 'SatellizerShared', 'SatellizerStorage'];
   var HttpProviderConfig = (function(){
     function HttpProviderConfig($httpProvider) {
-
+      this.$httpProvider = $httpProvider;
+      $httpProvider.interceptors.push(Interceptor.Factory);
     }
+
+    HttpProviderConfig.$inject = ['$httpProvider'];
+    return HttpProviderConfig;
   })();
+
   angular
     .module('satellizer', [])
-    .provider('$auth')
+    .provider('$auth', ['SatellizerConfig', function(SatellizerConfig) {
+      return new AuthProvider(SatellizerConfig);
+    }])
     .constant('SatellizerConfig', Config.getConstant)
     .service('SatellizerShared', Shared)
+    .service('SatellizerLocal', Local)
+    .service('SatellizerPopup', Popup)
+    .service('SatellizerOAuth', OAuth)
+    .service('SatellizerOAuth2', OAuth2)
+    .service('SatellizerOAuth1', OAuth1)
+    .service('SatellizerStorage', Storage)
+    .service('SatellizerInterceptor', Interceptor)
+    .config(['$httpProvide', function($httpProvider) {
+      return new HttpProviderConfig($httpProvider);
+    }]);
+    var ng1 = 'satellizer';
+
+    return ng1;
 
 }));
