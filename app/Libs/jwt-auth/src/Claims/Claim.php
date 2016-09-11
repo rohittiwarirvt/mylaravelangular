@@ -13,7 +13,7 @@ abstract class Claim  implement ClaimInterface
 
   protected $value;
 
-  public function _contstruct($value)
+  public function _construct($value)
   {
 
     $this->setValue($value);
