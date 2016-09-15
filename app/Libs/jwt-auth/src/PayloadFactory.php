@@ -91,6 +91,7 @@ class PayloadFactory
   {
     return Utils::now()->timestamp();
   }
+
   protected function jti()
   {
     $sub = array_get($this->claims, 'sub', '');
