@@ -79,4 +79,23 @@ class JWTManager
   {
     return $this->jwt;
   }
+
+  public function getBlacklist()
+  {
+    return $this->blacklist;
+  }
+
+  public  function setBlacklistEnabled($enabled)
+  {
+    $this->blacklistEnabled =$enabled;
+    return $this;
+  }
+
+  public function  setRefreshFlow($refresh = true)
+  {
+    $this->refreshFlow = $refreshFlow;
+  }
+
+
 }
+
