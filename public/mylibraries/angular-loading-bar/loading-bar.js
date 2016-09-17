@@ -11,6 +11,90 @@
 
         var interceptor = ['$q', '$cacheFactory', '$timeout', '$rootScope', '$log', 'cfpLoadingBar', function($q, $cacheFactory, $timeout, $rootScope, $log, cfpLoadingBar){
 
+          var reqTotal = 0;
+
+          var reqsCompleted = 0;
+
+          var latencyThreshold = cfpLoadingBar.latencyThreshold;
+
+          var startTimeout;
+
+          function setComplete() {
+            $timeout.cancel(startTimeout);
+            cfpLoadingBar.complete();
+            reqsCompleted = 0;
+            reqsTotal = 0;
+          }
+
+          function isCached(config) {
+            var cache;
+            var defaultCache = $cacheFactory.get('$http');
+            var defaults = $httpProvider.defaults;
+
+            if ((config.cache || defaults.cache) && config.cache !== false && (config.method == 'GET' || config.method == 'JSONP')) {
+              cache = angular.isObject(config.cache) ? config.cache : angular.isObject(defaults.cache) ? defaults.cache : defaultCache;
+            }
+
+            var cache = cache !== undefined ? cache.get(config.url) !== undefined: false;
+
+            if (config.cache !== undefined && cached != config.cached) {
+              return config.cached;
+            }
+
+            config.cached = cached;
+            return cached;
+          }
+
+          return {
+            request: function(config) {
+              if(!config.ignoreLoadingBar && !isCached(config)) {
+                $rootScope.$broadcast('cfpLoadingBar:loading', {url:config.url});
+                if (reqsTotal == 0) {
+                  startTimeout = $timeout(function() {
+                    cfpLoadingBar.start();
+                  }, latencyThreshold);
+                }
+                reqsTotal++;
+                cfpLoadingBar.set(reqsCompleted / reqsTotal);
+              }
+            },
+            response:function (response) {
+              if ( !response || !response.config) {
+                $log.error("blabh balbh");
+                return response;
+              }
+
+              if (!response.config.ignoreLoadingBar || !isCached(response.config)) {
+                reqsCompleted ++;
+                $rootScope.broadcast('cfpLoadingBar:loaded', {url:response.config.url,result: response});
+
+                if( reqsCompleted >= reqsTotal) {
+                  setComplete();
+                } else {
+                  cfpLoadingBar.set(reqsCompleted/reqsTotal);
+                }
+              }
+              return response;
+            },
+            responseError: function (rejection) {
+              if ( !rejection || !rejection.config) {
+                $log.error("blabh balbh");
+                return $q.reject(rejection);
+              }
+
+              if (!rejection.config.ignoreLoadingBar || !isCached(rejection.config)) {
+                reqsCompleted ++;
+                $rootScope.broadcast('cfpLoadingBar:loaded', {url:rejection.config.url,result: rejection});
+
+                if( reqsCompleted >= reqsTotal) {
+                  setComplete();
+                } else {
+                  cfpLoadingBar.set(reqsCompleted/reqsTotal);
+                }
+              }
+              return $q.reject(rejection);
+            }
+          }
         }];
 
         $httpProvider.interceptor.push(interceptor);
